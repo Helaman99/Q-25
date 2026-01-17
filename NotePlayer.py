@@ -40,37 +40,6 @@ BPM = 120
 
 BUZZER = "put the BUZZER here"
 
-LED_TRIGGER = "/sys/class/leds/led0/trigger"
-LED_BRIGHTNESS = "/sys/class/leds/led0/brightness"
-
-
-# ---------------- LED CONTROL ---------------- #
-
-def save_and_disable_led_trigger():
-    """Save current LED trigger and disable automatic control."""
-    with open(LED_TRIGGER, "r") as f:
-        current = f.read().strip()
-    # Save it globally so we can restore later
-    global ORIGINAL_TRIGGER
-    ORIGINAL_TRIGGER = current
-
-    # Disable automatic LED behavior
-    with open(LED_TRIGGER, "w") as f:
-        f.write("none")
-
-def restore_led_trigger():
-    """Restore the LED trigger to its original behavior."""
-    with open(LED_TRIGGER, "w") as f:
-        f.write(ORIGINAL_TRIGGER)
-
-def led_on():
-    with open(LED_BRIGHTNESS, "w") as f:
-        f.write("1")
-
-def led_off():
-    with open(LED_BRIGHTNESS, "w") as f:
-        f.write("0")
-
 
 # ---------------- BUZZER + MUSIC ---------------- #
 
@@ -82,15 +51,12 @@ def play_tone(frequency, duration_seconds):
         return
     
     duration_played = duration_seconds * SUSTAIN
-
-    led_on()
     
     BUZZER.frequency = frequency
     BUZZER.duty_cycle = 0.5
     time.sleep(duration_played)
 
     BUZZER.duty_cycle = 0
-    led_off()
     time.sleep(duration_seconds - duration_played)
 
 def note_to_frequency(note):
@@ -107,18 +73,12 @@ def note_to_frequency(note):
 def play_melody():
     seconds_per_beat = 60.0 / BPM
 
-    save_and_disable_led_trigger()
+    for note_name, duration_key in MELODY:
+        frequency = note_to_frequency(note_name)
+        duration_beats = NOTE_DURATIONS[duration_key]
+        duration_seconds = duration_beats * seconds_per_beat
 
-    try:
-        for note_name, duration_key in MELODY:
-            frequency = note_to_frequency(note_name)
-            duration_beats = NOTE_DURATIONS[duration_key]
-            duration_seconds = duration_beats * seconds_per_beat
-
-            play_tone(frequency, duration_seconds)
-    finally:
-        led_off()
-        restore_led_trigger()
+        play_tone(frequency, duration_seconds)
 
 # ---------------- RUN ---------------- #
 play_melody()
