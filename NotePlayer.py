@@ -1,4 +1,5 @@
-import time
+from gpiozero import PWMOutputDevice
+from time import sleep
 
 BASE_FREQUENCIES = {
     "C": 261.63,
@@ -18,6 +19,7 @@ BASE_FREQUENCIES = {
 NOTE_DURATIONS = {
     "1": 1.0,
     "1/2": 0.5,
+    "3/4": 0.75,
     "1/4": 0.25,
     "1/8": 0.125,
     "2": 2.0,
@@ -26,19 +28,57 @@ NOTE_DURATIONS = {
 }
 
 MELODY = [
-    ("C4", "1/4"),
-    ("E4", "1/4"),
-    ("G4", "1/4"),
-    ("C5", "1/1"),
-    ("", "1/2"),
-    ("A3", "1/8")
+    ("A4", "1"),
+    ("A4", "1"),
+    ("A4", "1"),
+    ("F4", "3/4"),
+    ("C5", "1/4"),
+    ("A4", "1"),
+    ("F4", "3/4"),
+    ("C5", "1/4"),
+    ("A4", "1"),
+    ("", "1"),
+    ("E5", "1"),
+    ("E5", "1"),
+    ("E5", "1"),
+    ("F5", "3/4"),
+    ("C5", "1/4"),
+    ("G#4", "1"),
+    ("F4", "3/4"),
+    ("C5", "1/4"),
+    ("A4", "1"),
+    ("", "1"),
+    ("A5", "1"),
+    ("A4", "3/4"),
+    ("A4", "1/4"),
+    ("A5", "1"),
+    ("G#5", "3/4"),
+    ("G5", "1/4"),
+    ("F#5", "1/4"),
+    ("F5", "1/4"),
+    ("F#5", "1"),
+    ("A#4", "1/2"),
+    ("D#5", "1"),
+    ("D5", "3/4"),
+    ("C#5", "1/4"),
+    ("C5", "1/4"),
+    ("B4", "1/4"),
+    ("C5", "1"),
+    ("F4", "1/2"),
+    ("G#4", "1"),
+    ("F4", "3/4"),
+    ("C5", "1/4"),
+    ("A4", "1"),
+    ("F4", "3/4"),
+    ("C5", "1/4"),
+    ("A4", "1")
 ]
 
 SUSTAIN = 0.75 # How much of the note duration is actually played
 
-BPM = 120
+BPM = 103
 
-BUZZER = "put the BUZZER here"
+BUZZER = PWMOutputDevice(18)
 
 
 # ---------------- BUZZER + MUSIC ---------------- #
@@ -46,18 +86,18 @@ BUZZER = "put the BUZZER here"
 def play_tone(frequency, duration_seconds):
     if frequency == 0:
         # Rest
-        BUZZER.duty_cycle = 0
-        time.sleep(duration_seconds)
+        BUZZER.value = 0
+        sleep(duration_seconds)
         return
     
     duration_played = duration_seconds * SUSTAIN
     
     BUZZER.frequency = frequency
-    BUZZER.duty_cycle = 0.5
-    time.sleep(duration_played)
+    BUZZER.value = 0.5
+    sleep(duration_played)
 
-    BUZZER.duty_cycle = 0
-    time.sleep(duration_seconds - duration_played)
+    BUZZER.value = 0
+    sleep(duration_seconds - duration_played)
 
 def note_to_frequency(note):
     if note == "" or note is None:
