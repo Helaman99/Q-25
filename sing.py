@@ -1,3 +1,5 @@
+import json
+import sys
 from gpiozero import PWMOutputDevice
 from time import sleep
 
@@ -27,56 +29,7 @@ NOTE_DURATIONS = {
     "4": 4.0
 }
 
-MELODY = [
-    ("A4", "1"),
-    ("A4", "1"),
-    ("A4", "1"),
-    ("F4", "3/4"),
-    ("C5", "1/4"),
-    ("A4", "1"),
-    ("F4", "3/4"),
-    ("C5", "1/4"),
-    ("A4", "1"),
-    ("", "1"),
-    ("E5", "1"),
-    ("E5", "1"),
-    ("E5", "1"),
-    ("F5", "3/4"),
-    ("C5", "1/4"),
-    ("G#4", "1"),
-    ("F4", "3/4"),
-    ("C5", "1/4"),
-    ("A4", "1"),
-    ("", "1"),
-    ("A5", "1"),
-    ("A4", "3/4"),
-    ("A4", "1/4"),
-    ("A5", "1"),
-    ("G#5", "3/4"),
-    ("G5", "1/4"),
-    ("F#5", "1/4"),
-    ("F5", "1/4"),
-    ("F#5", "1"),
-    ("A#4", "1/2"),
-    ("D#5", "1"),
-    ("D5", "3/4"),
-    ("C#5", "1/4"),
-    ("C5", "1/4"),
-    ("B4", "1/4"),
-    ("C5", "1"),
-    ("F4", "1/2"),
-    ("G#4", "1"),
-    ("F4", "3/4"),
-    ("C5", "1/4"),
-    ("A4", "1"),
-    ("F4", "3/4"),
-    ("C5", "1/4"),
-    ("A4", "1")
-]
-
-SUSTAIN = 0.75 # How much of the note duration is actually played
-
-BPM = 103
+SUSTAIN = 0.75  # How much of the note duration is actually played
 
 BUZZER = PWMOutputDevice(18)
 
@@ -85,7 +38,6 @@ BUZZER = PWMOutputDevice(18)
 
 def play_tone(frequency, duration_seconds):
     if frequency == 0:
-        # Rest
         BUZZER.value = 0
         sleep(duration_seconds)
         return
@@ -99,8 +51,9 @@ def play_tone(frequency, duration_seconds):
     BUZZER.value = 0
     sleep(duration_seconds - duration_played)
 
+
 def note_to_frequency(note):
-    if note == "" or note is None:
+    if not note:
         return 0
 
     pitch = note[:-1]
@@ -110,15 +63,47 @@ def note_to_frequency(note):
     octave_shift = octave - 4
     return base_freq * (2 ** octave_shift)
 
-def play_melody():
-    seconds_per_beat = 60.0 / BPM
 
-    for note_name, duration_key in MELODY:
+def play_melody(melody, bpm):
+    seconds_per_beat = 60.0 / bpm
+
+    for note_name, duration_key in melody:
         frequency = note_to_frequency(note_name)
         duration_beats = NOTE_DURATIONS[duration_key]
         duration_seconds = duration_beats * seconds_per_beat
 
         play_tone(frequency, duration_seconds)
 
-# ---------------- RUN ---------------- #
-play_melody()
+
+# ---------------- MAIN ---------------- #
+
+def load_melody_from_json(path):
+    with open(path, "r") as f:
+        data = json.load(f)
+
+    # Expecting: { "melody": [ ["A4","1"], ["F4","1/2"], ... ] }
+    return data["melody"]
+
+def load_bpm_from_json(path):
+    with open(path, "r") as f:
+        data = json.load(f)
+
+    return data["bpm"]
+
+if __name__ == "__main__":
+    if len(sys.argv) not in (2, 3):
+        print("Usage: python play.py <song.json> OR python sing.py <song.json> <BPM>")
+        sys.exit(1)
+
+    json_path = sys.argv[1]
+
+    try:
+        if len(sys.argv) == 2:
+            bpm = load_bpm_from_json(json_path)
+        else:
+            bpm = int(sys.argv[2])
+
+        melody = load_melody_from_json(json_path)
+        play_melody(melody, bpm)
+    finally:
+        BUZZER.close()
