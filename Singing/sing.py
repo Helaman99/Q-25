@@ -104,6 +104,7 @@ if __name__ == "__main__":
             bpm = int(sys.argv[2])
 
         melody = load_melody_from_json(json_path)
+        print("Singing " + sys.argv[1])
         play_melody(melody, bpm)
     finally:
         BUZZER.close()

@@ -16,4 +16,4 @@ for i in range(10):
 	kit.servo[5].angle += 5
 	kit.servo[9].angle -= 5
 	kit.servo[13].angle += 5
-	time.sleep(0.2)
+	time.sleep(0.15)
