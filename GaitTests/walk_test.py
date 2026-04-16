@@ -25,37 +25,37 @@ class Leg:
 				kit.servo[self.kneePitch].angle = abs(self.inversion - 110)
 			case 1: # Lifted
 				kit.servo[self.hipYaw].angle = 60
-				kit.servo[self.hipPitch].angle = abs(self.inversion - 10)
+				kit.servo[self.hipPitch].angle = abs(self.inversion - 20)
 				kit.servo[self.kneePitch].angle = abs(self.inversion - 110)
 			case 2: # Stepping out
 				kit.servo[self.hipYaw].angle = abs(self.inversion - 85)
-				kit.servo[self.hipPitch].angle = abs(self.inversion - 110)
-				kit.servo[self.kneePitch].angle = abs(self.inversion - 45)
+				kit.servo[self.hipPitch].angle = abs(self.inversion - 80)
+				kit.servo[self.kneePitch].angle = abs(self.inversion - 110)
 			case 3: # Pulling in
 				kit.servo[self.hipYaw].angle = abs(self.inversion - 56)
-				kit.servo[self.hipPitch].angle = abs(self.inversion - 96)
-				kit.servo[self.kneePitch].angle = abs(self.inversion - 66)
+				kit.servo[self.hipPitch].angle = abs(self.inversion - 80)
+				kit.servo[self.kneePitch].angle = abs(self.inversion - 110)
 			case 4: # Pulling in
 				kit.servo[self.hipYaw].angle = abs(self.inversion - 38)
-				kit.servo[self.hipPitch].angle = abs(self.inversion - 83)
-				kit.servo[self.kneePitch].angle = abs(self.inversion - 87)
+				kit.servo[self.hipPitch].angle = abs(self.inversion - 80)
+				kit.servo[self.kneePitch].angle = abs(self.inversion - 110)
 			case 5: # Fully in
 				kit.servo[self.hipYaw].angle = abs(self.inversion - 10)
-				kit.servo[self.hipPitch].angle = abs(self.inversion - 70)
+				kit.servo[self.hipPitch].angle = abs(self.inversion - 80)
 				kit.servo[self.kneePitch].angle = abs(self.inversion - 110)
 			case _:
 				print("Invalid phase sent to leg.")
 
 	def CounterBalance(self):
 		if self.inversion == 0:
-			kit.servo[self.hipPitch].angle -= 20
+			kit.servo[self.hipPitch].angle -= 10
 		else:
-			kit.servo[self.hipPitch].angle += 20
+			kit.servo[self.hipPitch].angle += 10
 	def Rebalance(self):
 		if self.inversion == 0:
-			kit.servo[self.hipPitch].angle += 20
+			kit.servo[self.hipPitch].angle += 10
 		else:
-			kit.servo[self.hipPitch].angle -= 20
+			kit.servo[self.hipPitch].angle -= 10
 
 legOrder = [Leg(0), Leg(2), Leg(3), Leg(1)]
 
@@ -75,7 +75,7 @@ while (True):
 		else:
 			legOrder[curLeg].MoveToPosition(5)
 			legOrder[nextLeg].Rebalance()
-
+		input()
 		if legOrder[nextLeg].inFront:
 			legOrder[nextLeg].MoveToPosition(5)
 		else:
