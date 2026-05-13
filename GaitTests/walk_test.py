@@ -97,13 +97,14 @@ prevLegOpposite = False # Every other iteration, the leg that needs to be counte
 while (True):
 	for curLeg in range(4):
 		if prevLegOpposite:
-			nextLeg = (curLeg - 1) % 4
+			nextLeg = (curLeg + 3) % 4
 			prevLegOpposite = False
+			lastLeg = (curLeg + 1) % 4
 		else:
 			nextLeg = (curLeg + 1) % 4
 			prevLegOpposite = True
+			lastLeg = (curLeg + 3) % 4
 		secondNextLeg = (curLeg + 2) % 4
-		lastLeg = (curLeg + 3) % 4
 
 		legOrder[nextLeg].CounterBalance()
 		time.sleep(0.2)

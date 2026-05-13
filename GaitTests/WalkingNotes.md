@@ -1,5 +1,9 @@
 # Notes for implementing the walking gait
 
+## Current Issues
+Currently, the second next leg goes in the wrong direction when prevLegOpposite is True.
+When prevLegOpposite is False, the last leg goes in the wrong direction.
+
 Starting angle: Hip pitch 80, knee pitch 110
 Left leg --> just lift hip pitch
 Rotate hip yaw to desired angle (not by much)
