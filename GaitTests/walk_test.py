@@ -8,11 +8,11 @@ class Joint:
 		self.servoNum = servoNum
 		self.curAngle = 60
 		kit.servo[self.servoNum].angle = 60
-		self.logging = True
+		self.logging = False
 
 	def MoveToAngle(self, newAngle):
 		distance = max(self.curAngle, newAngle) - min(self.curAngle, newAngle)
-		step = (int)(distance / 7)
+		step = (int)(distance / 4)
 
 		if self.logging:
 			print(f"Moving servo {self.servoNum} from {self.curAngle} degrees to {newAngle} degrees")
@@ -21,12 +21,12 @@ class Joint:
 			while (self.curAngle + step < newAngle):
 				kit.servo[self.servoNum].angle = self.curAngle + step
 				self.curAngle += step
-				time.sleep(0.15)
+				time.sleep(0.1)
 		else:
 			while (self.curAngle - step > newAngle):
 				kit.servo[self.servoNum].angle = self.curAngle - step
 				self.curAngle -= step
-				time.sleep(0.15)
+				time.sleep(0.1)
 
 		kit.servo[self.servoNum].angle = newAngle
 		self.curAngle = newAngle
@@ -39,6 +39,7 @@ class Leg:
 		self.kneePitch = Joint(self.hipYaw.servoNum + 2)
 		self.inversion = 0
 		self.inFront = False
+		self.curPosition = None
 		self.logging = True
 
 		if number % 2 != 0:
@@ -75,6 +76,37 @@ class Leg:
 				self.kneePitch.MoveToAngle(abs(self.inversion - 110))
 			case _:
 				print("Invalid phase sent to leg.")
+		self.curPosition = position
+
+	def MoveToNextPosition(self):
+		match self.curPosition:
+			case 0:
+				print("No next position from the default standing position.")
+			case 1:
+				if self.inFront:
+					self.MoveToPosition(2)
+				else:
+					self.MoveToPosition(5)
+			case 2:
+				if self.inFront:
+					self.MoveToPosition(3)
+				else:
+					self.MoveToPosition(1)
+			case 3:
+				if self.inFront:
+					self.MoveToPosition(4)
+				else:
+					self.MoveToPosition(2)
+			case 4:
+				if self.inFront:
+					self.MoveToPosition(5)
+				else:
+					self.MoveToPosition(3)
+			case 5:
+				if self.inFront:
+					self.MoveToPosition(1)
+				else:
+					self.MoveToPosition(4)
 
 	def CounterBalance(self):
 		if self.logging:
@@ -96,6 +128,7 @@ prevLegOpposite = False # Every other iteration, the leg that needs to be counte
 
 while (True):
 	for curLeg in range(4):
+		input("Press any key to continue.\n");
 		if prevLegOpposite:
 			nextLeg = (curLeg + 3) % 4
 			prevLegOpposite = False
@@ -105,6 +138,7 @@ while (True):
 			prevLegOpposite = True
 			lastLeg = (curLeg + 3) % 4
 		secondNextLeg = (curLeg + 2) % 4
+		print(f"prevLegOpposite = {prevLegOpposite}")
 
 		legOrder[nextLeg].CounterBalance()
 		time.sleep(0.2)
@@ -117,18 +151,22 @@ while (True):
 		else:
 			legOrder[curLeg].MoveToPosition(5)
 			legOrder[nextLeg].Rebalance()
-		input()
-		if legOrder[nextLeg].inFront:
-			legOrder[nextLeg].MoveToPosition(5)
-		else:
-			legOrder[nextLeg].MoveToPosition(2)
 
-		if legOrder[secondNextLeg].inFront:
-			legOrder[secondNextLeg].MoveToPosition(4)
-		else:
-			legOrder[secondNextLeg].MoveToPosition(3)
+		legOrder[nextLeg].MoveToNextPosition()
+		legOrder[secondNextLeg].MoveToNextPosition()
+		legOrder[lastLeg].MoveToNextPosition()
 
-		if legOrder[lastLeg].inFront:
-			legOrder[lastLeg].MoveToPosition(3)
-		else:
-			legOrder[lastLeg].MoveToPosition(4)
+		#if legOrder[nextLeg].inFront:
+		#	legOrder[nextLeg].MoveToPosition(5)
+		#else:
+		#	legOrder[nextLeg].MoveToPosition(2)
+
+		#if legOrder[secondNextLeg].inFront and prevLegOpposite == False:
+		#	legOrder[secondNextLeg].MoveToPosition(4)
+		#else:
+		#	legOrder[secondNextLeg].MoveToPosition(3)
+
+		#if legOrder[lastLeg].inFront:
+		#	legOrder[lastLeg].MoveToPosition(3)
+		#else:
+		#	legOrder[lastLeg].MoveToPosition(4)
