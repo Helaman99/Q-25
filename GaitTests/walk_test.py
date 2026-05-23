@@ -1,5 +1,6 @@
 import time
 from adafruit_servokit import ServoKit
+import threading
 
 kit = ServoKit(channels=16)
 
@@ -63,14 +64,18 @@ class Leg:
 				self.hipPitch.MoveToAngle(abs(self.inversion - 80))
 				self.kneePitch.MoveToAngle(abs(self.inversion - 110))
 			case 3: # Pulling in
-				self.hipYaw.MoveToAngle(abs(self.inversion - 56))
+				self.hipYaw.MoveToAngle(abs(self.inversion - 64))
 				self.hipPitch.MoveToAngle(abs(self.inversion - 80))
 				self.kneePitch.MoveToAngle(abs(self.inversion - 110))
 			case 4: # Pulling in
-				self.hipYaw.MoveToAngle(abs(self.inversion - 38))
+				self.hipYaw.MoveToAngle(abs(self.inversion - 46))
 				self.hipPitch.MoveToAngle(abs(self.inversion - 80))
 				self.kneePitch.MoveToAngle(abs(self.inversion - 110))
-			case 5: # Fully in
+			case 5: # Pulling in
+				self.hipYaw.MoveToAngle(abs(self.inversion - 28))
+				self.hipPitch.MoveToAngle(abs(self.inversion - 80))
+				self.kneePitch.MoveToAngle(abs(self.inversion - 110))
+			case 6: # Fully in
 				self.hipYaw.MoveToAngle(abs(self.inversion - 10))
 				self.hipPitch.MoveToAngle(abs(self.inversion - 80))
 				self.kneePitch.MoveToAngle(abs(self.inversion - 110))
@@ -79,34 +84,15 @@ class Leg:
 		self.curPosition = position
 
 	def MoveToNextPosition(self):
-		match self.curPosition:
-			case 0:
-				print("No next position from the default standing position.")
-			case 1:
-				if self.inFront:
-					self.MoveToPosition(2)
-				else:
-					self.MoveToPosition(5)
-			case 2:
-				if self.inFront:
-					self.MoveToPosition(3)
-				else:
-					self.MoveToPosition(1)
-			case 3:
-				if self.inFront:
-					self.MoveToPosition(4)
-				else:
-					self.MoveToPosition(2)
-			case 4:
-				if self.inFront:
-					self.MoveToPosition(5)
-				else:
-					self.MoveToPosition(3)
-			case 5:
-				if self.inFront:
-					self.MoveToPosition(1)
-				else:
-					self.MoveToPosition(4)
+		if self.curPosition == 0:
+			print("No next position from the default standing position.")
+		elif self.curPosition == 6 and self.inFront:
+			self.MoveToPosition(1)
+		elif self.curPosition == 1 and not self.inFront:
+			self.MoveToPosition(6)
+		else:
+			if self.inFront: self.MoveToPosition(self.curPosition + 1)
+			else: self.MoveToPosition(self.curPosition - 1)
 
 	def CounterBalance(self):
 		if self.logging:
@@ -125,6 +111,9 @@ class Leg:
 
 legOrder = [Leg(0), Leg(2), Leg(3), Leg(1)]
 prevLegOpposite = False # Every other iteration, the leg that needs to be counterbalanced is the one before the current leg
+
+for leg in legOrder:
+	leg.MoveToPosition(0)
 
 while (True):
 	for curLeg in range(4):
@@ -145,28 +134,18 @@ while (True):
 		legOrder[curLeg].MoveToPosition(1)
 		time.sleep(0.18)
 
-		if legOrder[curLeg].inFront:
-			legOrder[curLeg].MoveToPosition(2)
-			legOrder[nextLeg].Rebalance()
-		else:
-			legOrder[curLeg].MoveToPosition(5)
-			legOrder[nextLeg].Rebalance()
+		legOrder[curLeg].MoveToNextPosition()
+		legOrder[nextLeg].Rebalance()
 
-		legOrder[nextLeg].MoveToNextPosition()
-		legOrder[secondNextLeg].MoveToNextPosition()
-		legOrder[lastLeg].MoveToNextPosition()
+		threads = []
 
-		#if legOrder[nextLeg].inFront:
-		#	legOrder[nextLeg].MoveToPosition(5)
-		#else:
-		#	legOrder[nextLeg].MoveToPosition(2)
+		for leg in [curLeg, nextLeg, secondNextLeg, lastLeg]:
+			t = threading.Thread(
+				target=legOrder[leg].MoveToNextPosition
+			)
+			t.start()
+			threads.append(t)
 
-		#if legOrder[secondNextLeg].inFront and prevLegOpposite == False:
-		#	legOrder[secondNextLeg].MoveToPosition(4)
-		#else:
-		#	legOrder[secondNextLeg].MoveToPosition(3)
+		for t in threads:
+			t.join()
 
-		#if legOrder[lastLeg].inFront:
-		#	legOrder[lastLeg].MoveToPosition(3)
-		#else:
-		#	legOrder[lastLeg].MoveToPosition(4)
