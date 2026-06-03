@@ -11,24 +11,30 @@ class Joint:
 		kit.servo[self.servoNum].angle = 60
 		self.logging = False
 
-	def MoveToAngle(self, newAngle):
-		distance = max(self.curAngle, newAngle) - min(self.curAngle, newAngle)
-		step = (int)(distance / 4)
-
+	def MoveToAngle(self, newAngle, steps=30, delay=0.03):
 		if self.logging:
 			print(f"Moving servo {self.servoNum} from {self.curAngle} degrees to {newAngle} degrees")
 
-		if self.curAngle < newAngle:
-			while (self.curAngle + step < newAngle):
-				kit.servo[self.servoNum].angle = self.curAngle + step
-				self.curAngle += step
-				time.sleep(0.1)
-		else:
-			while (self.curAngle - step > newAngle):
-				kit.servo[self.servoNum].angle = self.curAngle - step
-				self.curAngle -= step
-				time.sleep(0.1)
+		startAngle = self.curAngle
 
+		for i in range(1, steps + 1):
+			t = i / steps
+
+			t_eased = 2 * t * t if t < 0.5 else 1 - (-2 * t + 2) ** 2 / 2
+
+			intermediateAngle = startAngle + (newAngle - startAngle) * t_eased
+			if intermediateAngle < 0 or intermediateAngle > 120:
+				print(f"Incorrect angle given to servo {self.servoNum}: {intermediateAngle}")
+				Exit()
+
+			kit.servo[self.servoNum].angle = intermediateAngle
+			self.curAngle = intermediateAngle
+			time.sleep(delay)
+
+			if self.logging:
+				print(f"Step {i}: {intermediateAngle}")
+
+		# Ensure we land exactly on the target
 		kit.servo[self.servoNum].angle = newAngle
 		self.curAngle = newAngle
 
@@ -58,27 +64,27 @@ class Leg:
 				self.kneePitch.MoveToAngle(abs(self.inversion - 110))
 			case 1: # Lifted
 				self.hipPitch.MoveToAngle(abs(self.inversion - 20))
-				self.kneePitch.MoveToAngle(abs(self.inversion - 110))
+				#self.kneePitch.MoveToAngle(abs(self.inversion - 110))
 			case 2: # Stepping out
 				self.hipYaw.MoveToAngle(abs(self.inversion - 85))
 				self.hipPitch.MoveToAngle(abs(self.inversion - 80))
-				self.kneePitch.MoveToAngle(abs(self.inversion - 110))
+				#self.kneePitch.MoveToAngle(abs(self.inversion - 110))
 			case 3: # Pulling in
 				self.hipYaw.MoveToAngle(abs(self.inversion - 64))
 				self.hipPitch.MoveToAngle(abs(self.inversion - 80))
-				self.kneePitch.MoveToAngle(abs(self.inversion - 110))
+				#self.kneePitch.MoveToAngle(abs(self.inversion - 110))
 			case 4: # Pulling in
 				self.hipYaw.MoveToAngle(abs(self.inversion - 46))
 				self.hipPitch.MoveToAngle(abs(self.inversion - 80))
-				self.kneePitch.MoveToAngle(abs(self.inversion - 110))
+				#self.kneePitch.MoveToAngle(abs(self.inversion - 110))
 			case 5: # Pulling in
 				self.hipYaw.MoveToAngle(abs(self.inversion - 28))
 				self.hipPitch.MoveToAngle(abs(self.inversion - 80))
-				self.kneePitch.MoveToAngle(abs(self.inversion - 110))
+				#self.kneePitch.MoveToAngle(abs(self.inversion - 110))
 			case 6: # Fully in
 				self.hipYaw.MoveToAngle(abs(self.inversion - 10))
 				self.hipPitch.MoveToAngle(abs(self.inversion - 80))
-				self.kneePitch.MoveToAngle(abs(self.inversion - 110))
+				#self.kneePitch.MoveToAngle(abs(self.inversion - 110))
 			case _:
 				print("Invalid phase sent to leg.")
 		self.curPosition = position
