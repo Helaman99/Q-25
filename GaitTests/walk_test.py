@@ -104,16 +104,16 @@ class Leg:
 		if self.logging:
 			print(f"Counterbalancing with leg {self.number}")
 		if self.inversion == 0:
-			kit.servo[self.hipPitch.servoNum].angle -= 10
+			kit.servo[self.hipPitch.servoNum].angle -= 20
 		else:
-			kit.servo[self.hipPitch.servoNum].angle += 10
+			kit.servo[self.hipPitch.servoNum].angle += 20
 	def Rebalance(self):
 		if self.logging:
 			print(f"Rebalancing leg {self.number}")
 		if self.inversion == 0:
-			kit.servo[self.hipPitch.servoNum].angle += 10
+			kit.servo[self.hipPitch.servoNum].angle += 20
 		else:
-			kit.servo[self.hipPitch.servoNum].angle -= 10
+			kit.servo[self.hipPitch.servoNum].angle -= 20
 
 legOrder = [Leg(0), Leg(2), Leg(3), Leg(1)]
 prevLegOpposite = False # Every other iteration, the leg that needs to be counterbalanced is the one before the current leg
@@ -137,11 +137,13 @@ while (True):
 
 		legOrder[nextLeg].CounterBalance()
 		time.sleep(0.2)
+
 		legOrder[curLeg].MoveToPosition(1)
 		time.sleep(0.18)
 
 		legOrder[curLeg].MoveToNextPosition()
 		legOrder[nextLeg].Rebalance()
+		time.sleep(0.2)
 
 		threads = []
 
