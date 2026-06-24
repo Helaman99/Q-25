@@ -57,36 +57,58 @@ class Leg:
 	def MoveToPosition(self, position):
 		if self.logging:
 			print(f"Moving leg {self.number} to position {position}")
+
+		jointThreads = []
 		match position:
-			case 0: # Standing
-				self.hipYaw.MoveToAngle(60)
-				self.hipPitch.MoveToAngle(abs(self.inversion - 80))
-				self.kneePitch.MoveToAngle(abs(self.inversion - 110))
-			case 1: # Lifted
-				self.hipPitch.MoveToAngle(abs(self.inversion - 20))
-				#self.kneePitch.MoveToAngle(abs(self.inversion - 110))
-			case 2: # Stepping out
-				self.hipYaw.MoveToAngle(abs(self.inversion - 85))
-				self.hipPitch.MoveToAngle(abs(self.inversion - 80))
-				#self.kneePitch.MoveToAngle(abs(self.inversion - 110))
-			case 3: # Pulling in
-				self.hipYaw.MoveToAngle(abs(self.inversion - 64))
-				self.hipPitch.MoveToAngle(abs(self.inversion - 80))
-				#self.kneePitch.MoveToAngle(abs(self.inversion - 110))
-			case 4: # Pulling in
-				self.hipYaw.MoveToAngle(abs(self.inversion - 46))
-				self.hipPitch.MoveToAngle(abs(self.inversion - 80))
-				#self.kneePitch.MoveToAngle(abs(self.inversion - 110))
-			case 5: # Pulling in
-				self.hipYaw.MoveToAngle(abs(self.inversion - 28))
-				self.hipPitch.MoveToAngle(abs(self.inversion - 80))
-				#self.kneePitch.MoveToAngle(abs(self.inversion - 110))
-			case 6: # Fully in
-				self.hipYaw.MoveToAngle(abs(self.inversion - 10))
-				self.hipPitch.MoveToAngle(abs(self.inversion - 80))
-				#self.kneePitch.MoveToAngle(abs(self.inversion - 110))
+			case 0:  # Standing
+				jointThreads += [
+					threading.Thread(target=self.hipYaw.MoveToAngle, args=(60,)),
+					threading.Thread(target=self.hipPitch.MoveToAngle, args=(abs(self.inversion - 80),)),
+					threading.Thread(target=self.kneePitch.MoveToAngle, args=(abs(self.inversion - 110),))
+				]
+			case 1:  # Lifted
+				jointThreads += [
+					threading.Thread(target=self.hipPitch.MoveToAngle, args=(abs(self.inversion - 20),)),
+					threading.Thread(target=self.kneePitch.MoveToAngle, args=(abs(self.inversion - 110),))
+				]
+			case 2:  # Stepping out
+				jointThreads += [
+					threading.Thread(target=self.hipYaw.MoveToAngle, args=(abs(self.inversion - 85),)),
+					threading.Thread(target=self.hipPitch.MoveToAngle, args=(abs(self.inversion - 80),)),
+					threading.Thread(target=self.kneePitch.MoveToAngle, args=(abs(self.inversion - 81),))
+				]
+			case 3:  # Pulling in
+				jointThreads += [
+					threading.Thread(target=self.hipYaw.MoveToAngle, args=(abs(self.inversion - 64),)),
+					threading.Thread(target=self.hipPitch.MoveToAngle, args=(abs(self.inversion - 80),)),
+					threading.Thread(target=self.kneePitch.MoveToAngle, args=(abs(self.inversion - 90),))
+				]
+			case 4:  # Pulling in
+				jointThreads += [
+					threading.Thread(target=self.hipYaw.MoveToAngle, args=(abs(self.inversion - 46),)),
+					threading.Thread(target=self.hipPitch.MoveToAngle, args=(abs(self.inversion - 80),)),
+					threading.Thread(target=self.kneePitch.MoveToAngle, args=(abs(self.inversion - 105),))
+				]
+			case 5:  # Pulling in
+				jointThreads += [
+					threading.Thread(target=self.hipYaw.MoveToAngle, args=(abs(self.inversion - 28),)),
+					threading.Thread(target=self.hipPitch.MoveToAngle, args=(abs(self.inversion - 80),)),
+					threading.Thread(target=self.kneePitch.MoveToAngle, args=(abs(self.inversion - 105),))
+				]
+			case 6:  # Fully in
+				jointThreads += [
+					threading.Thread(target=self.hipYaw.MoveToAngle, args=(abs(self.inversion - 10),)),
+					threading.Thread(target=self.hipPitch.MoveToAngle, args=(abs(self.inversion - 80),)),
+					threading.Thread(target=self.kneePitch.MoveToAngle, args=(abs(self.inversion - 110),))
+			]
 			case _:
 				print("Invalid phase sent to leg.")
+
+		for thread in jointThreads:
+			thread.start()
+		for thread in jointThreads:
+			thread.join()
+
 		self.curPosition = position
 
 	def MoveToNextPosition(self):
@@ -104,16 +126,16 @@ class Leg:
 		if self.logging:
 			print(f"Counterbalancing with leg {self.number}")
 		if self.inversion == 0:
-			kit.servo[self.hipPitch.servoNum].angle -= 20
+			self.hipPitch.MoveToAngle(self.hipPitch.curAngle - 20)
 		else:
-			kit.servo[self.hipPitch.servoNum].angle += 20
+			self.hipPitch.MoveToAngle(self.hipPitch.curAngle + 20)
 	def Rebalance(self):
 		if self.logging:
 			print(f"Rebalancing leg {self.number}")
 		if self.inversion == 0:
-			kit.servo[self.hipPitch.servoNum].angle += 20
+			self.hipPitch.MoveToAngle(self.hipPitch.curAngle + 20)
 		else:
-			kit.servo[self.hipPitch.servoNum].angle -= 20
+			self.hipPitch.MoveToAngle(self.hipPitch.curAngle - 20)
 
 legOrder = [Leg(0), Leg(2), Leg(3), Leg(1)]
 prevLegOpposite = False # Every other iteration, the leg that needs to be counterbalanced is the one before the current leg
