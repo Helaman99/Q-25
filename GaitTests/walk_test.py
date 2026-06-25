@@ -74,13 +74,13 @@ class Leg:
 			case 2:  # Stepping out
 				jointThreads += [
 					threading.Thread(target=self.hipYaw.MoveToAngle, args=(abs(self.inversion - 85),)),
-					threading.Thread(target=self.hipPitch.MoveToAngle, args=(abs(self.inversion - 80),)),
+					threading.Thread(target=self.hipPitch.MoveToAngle, args=(abs(self.inversion - 90),)),
 					threading.Thread(target=self.kneePitch.MoveToAngle, args=(abs(self.inversion - 81),))
 				]
 			case 3:  # Pulling in
 				jointThreads += [
 					threading.Thread(target=self.hipYaw.MoveToAngle, args=(abs(self.inversion - 64),)),
-					threading.Thread(target=self.hipPitch.MoveToAngle, args=(abs(self.inversion - 80),)),
+					threading.Thread(target=self.hipPitch.MoveToAngle, args=(abs(self.inversion - 90),)),
 					threading.Thread(target=self.kneePitch.MoveToAngle, args=(abs(self.inversion - 90),))
 				]
 			case 4:  # Pulling in
