@@ -7,8 +7,7 @@ kit = ServoKit(channels=16)
 class Joint:
 	def __init__(self, servoNum):
 		self.servoNum = servoNum
-		self.curAngle = 60
-		kit.servo[self.servoNum].angle = 60
+		self.curAngle = kit.servo[self.servoNum].angle
 		self.logging = False
 
 	def MoveToAngle(self, newAngle, steps=30, delay=0.03):
